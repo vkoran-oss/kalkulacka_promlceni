@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulačka Promlčecích Lhůt</title>
+    
+    <!-- 🔗 BOOTSTRAP CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .container-main {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            padding: 12px;
+            font-size: 16px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .input-group-custom {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        .input-group-custom input {
+            flex: 1;
+        }
+        
+        .input-group-custom select {
+            flex: 0 0 120px;
+        }
+        
+        .btn-calculate {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+        
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .result-box.show {
+            display: block;
+            animation: slideIn 0.3s ease-in;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .result-value {
+            color: #667eea;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .info-text {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #1565c0;
+        }
+        
+        .tabs-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab-btn {
+            padding: 10px 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @media (max-width: 600px) {
+            .container-main {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .result-value {
+                font-size: 24px;
+            }
+            
+            .input-group-custom {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .input-group-custom select {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-main">
+        <h1>📅 Kalkulačka Promlčecích Lhůt</h1>
+        
+        <!-- Záložky pro výběr typu vstupu -->
+        <div class="tabs-section">
+            <button class="tab-btn active" onclick="switchTab('predvolene')">
+                📋 Předdefinované
+            </button>
+            <button class="tab-btn" onclick="switchTab('vlastni')">
+                ✏️ Vlastní hodnota
+            </button>
+        </div>
+        
+        <form id="promlceniForm">
+            <!-- TAB 1: Předdefinované možnosti -->
+            <div id="tab-predvolene" class="tab-content active">
+                <div class="mb-4">
+                    <label for="typPromlceni" class="form-label">Vyberte typ promlčení:</label>
+                    <select id="typPromlceni" class="form-select" required>
+                        <option value="">-- Vyberte typ --</option>
+                        <option value="3">Subjektivní lhůta (3 roky)</option>
+                        <option value="10">Objektivní lhůta (10 let)</option>
+                        <option value="20">Mimořádné vydržení nemovitosti (20 let)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- TAB 2: Vlastní délka -->
+            <div id="tab-vlastni" class="tab-content">
+                <div class="mb-4">
+                    <label class="form-label">Zadejte vlastní délku promlčení:</label>
+                    <div class="input-group-custom">
+                        <input type="number" id="vlastniDelka" class="form-control" placeholder="např. 10, 15, 30" min="1" max="999">
+                        <select id="jednotka" class="form-select">
+                            <option value="days">Dní</option>
+                            <option value="months">Měsíců</option>
+                            <option value="years" selected>Let</option>
+                        </select>
+                    </div>
+                    <small class="text-muted d-block mt-2">Zadejte číslo a vyberte jednotku (dny, měsíce, roky)</small>
+                </div>
+            </div>
+            
+            <!-- Datum zahájení (společné pro oba taxy) -->
+            <div class="mb-4">
+                <label for="datumZahajeni" class="form-label">Datum zahájení promlčení:</label>
+                <input type="date" id="datumZahajeni" class="form-control" required>
+            </div>
+            
+            <!-- Tlačítko výpočtu -->
+            <button type="button" class="btn btn-calculate" onclick="vypocitajPromlceni()">
+                🔢 Vypočítat Promlčení
+            </button>
+        </form>
+        
+        <!-- Výsledek -->
+        <div class="result-box" id="vysledek">
+            <div class="result-label">Poslední den ještě ve lhůtě:</div>
+            <div class="result-value" id="vysledekDatum">--</div>
+            
+            <div class="result-label" style="margin-top: 15px;">Zbývajících dní:</div>
+            <div class="result-value" id="zbyvajiciDny">--</div>
+            
+            <div class="result-label" style="margin-top: 15px;">Délka promlčení:</div>
+            <div id="delkaPromlceni" style="color: #667eea; font-size: 18px; font-weight: 600;">--</div>
+            
+            <div id="upozorneniPosun"></div>
+            
+            <button class="btn btn-outline-primary mt-3 w-100" onclick="exportDoKalendare()">
+                📥 Exportovat do Kalendáře
+            </button>
+        </div>
+        
+        <div class="info-text">
+            ℹ️ <strong>Tip:</strong> Promlčení začína běžet ode dne, kdy mohlo být právo poprvé uplatněno. Počítáme od tohoto data. Pokud jste k úkonu vyzváni orgánem veřejné moci, rozhodné je datum doručení písemnosti poštou či do datové schránky. <strong>Pokud poslední den lhůty připadne na víkend nebo státní svátek, lhůta se automaticky prodlužuje na nejbližší pracovní den.</strong>
+        </div>
+    </div>
+    
+    <!-- 🔗 BOOTSTRAP JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Státní svátky České republiky (den a měsíc)
+        function jeStatniSvatek(datum) {
+            const den = datum.getDate();
+            const mesic = datum.getMonth() + 1; // Měsíce jsou 0-11
+            const rok = datum.getFullYear();
+            
+            // Pevné svátky
+            const pevneSvatky = [
+                [1, 1],   // Nový rok, Den obnovy samostatného českého státu
+                [1, 5],   // Svátek práce
+                [8, 5],   // Den vítězství
+                [5, 7],   // Den slovanských věrozvěstů Cyrila a Metoděje
+                [6, 7],   // Den upálení mistra Jana Husa
+                [28, 9],  // Den české státnosti
+                [28, 10], // Den vzniku samostatného československého státu
+                [17, 11], // Den boje za svobodu a demokracii
+                [24, 12], // Štědrý den
+                [25, 12], // 1. svátek vánoční
+                [26, 12]  // 2. svátek vánoční
+            ];
+            
+            // Kontrola pevných svátků
+            for (let svatek of pevneSvatky) {
+                if (den === svatek[0] && mesic === svatek[1]) {
+                    return true;
+                }
+            }
+            
+            // Velikonoční pondělí (pohyblivý svátek) - výpočet
+            const velikonocniPondeli = vypocitejVelikonocniPondeli(rok);
+            if (datum.toDateString() === velikonocniPondeli.toDateString()) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // Výpočet data Velikonočního pondělí (Gaussův algoritmus)
+        function vypocitejVelikonocniPondeli(rok) {
+            const a = rok % 19;
+            const b = Math.floor(rok / 100);
+            const c = rok % 100;
+            const d = Math.floor(b / 4);
+            const e = b % 4;
+            const f = Math.floor((b + 8) / 25);
+            const g = Math.floor((b - f + 1) / 3);
+            const h = (19 * a + b - d - g + 15) % 30;
+            const i = Math.floor(c / 4);
+            const k = c % 4;
+            const l = (32 + 2 * e + 2 * i - h - k) % 7;
+            const m = Math.floor((a + 11 * h + 22 * l) / 451);
+            const mesic = Math.floor((h + l - 7 * m + 114) / 31);
+            const den = ((h + l - 7 * m + 114) % 31) + 1;
+            
+            // Velikonoční neděle
+            const velikonocniNedele = new Date(rok, mesic - 1, den);
+            
+            // Velikonoční pondělí = Velikonoční neděle + 1 den
+            const velikonocniPondeli = new Date(velikonocniNedele);
+            velikonocniPondeli.setDate(velikonocniNedele.getDate() + 1);
+            
+            return velikonocniPondeli;
+        }
+        
+        // Kontrola, zda je den pracovní (není víkend ani svátek)
+        function jePracovniDen(datum) {
+            const denVTydnu = datum.getDay(); // 0 = neděle, 6 = sobota
+            
+            // Víkend
+            if (denVTydnu === 0 || denVTydnu === 6) {
+                return false;
+            }
+            
+            // Státní svátek
+            if (jeStatniSvatek(datum)) {
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Posunutí data na nejbližší pracovní den
+        function posunNaPracovniDen(datum) {
+            const noveDatum = new Date(datum);
+            
+            while (!jePracovniDen(noveDatum)) {
+                noveDatum.setDate(noveDatum.getDate() + 1);
+            }
+            
+            return noveDatum;
+        }
+        
+        // Přepínání mezi záložkami
+        function switchTab(tabName) {
+            // Skrýt všechny taxy
+            document.getElementById('tab-predvolene').classList.remove('active');
+            document.getElementById('tab-vlastni').classList.remove('active');
+            
+            // Deaktivovat všechna tlačítka
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Zobrazit vybraný tab
+            document.getElementById('tab-' + tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Vymazat výsledky
+            document.getElementById('vysledek').classList.remove('show');
+        }
+        
+        function vypocitajPromlceni() {
+            const datumZahajeni = document.getElementById('datumZahajeni').value;
+            
+            if (!datumZahajeni) {
+                alert('Prosím, vyberte datum zahájení!');
+                return;
+            }
+            
+            let roky = 0, mesice = 0, dny = 0;
+            let delkaText = '';
+            
+            // Zjistit, který tab je aktivní
+            const tabPredvolene = document.getElementById('tab-predvolene').classList.contains('active');
+            
+            if (tabPredvolene) {
+                const typPromlceni = document.getElementById('typPromlceni').value;
+                if (!typPromlceni) {
+                    alert('Prosím, vyberte typ promlčení!');
+                    return;
+                }
+                roky = parseInt(typPromlceni);
+                delkaText = `${roky} ${roky === 1 ? 'rok' : roky < 5 ? 'roky' : 'let'}`;
+            } else {
+                const vlastniDelka = document.getElementById('vlastniDelka').value;
+                const jednotka = document.getElementById('jednotka').value;
+                
+                if (!vlastniDelka || vlastniDelka <= 0) {
+                    alert('Prosím, zadejte kladné číslo!');
+                    return;
+                }
+                
+                const hodnota = parseInt(vlastniDelka);
+                
+                if (jednotka === 'days') {
+                    dny = hodnota;
+                    delkaText = `${hodnota} ${hodnota === 1 ? 'den' : 'dní'}`;
+                } else if (jednotka === 'months') {
+                    mesice = hodnota;
+                    delkaText = `${hodnota} ${hodnota === 1 ? 'měsíc' : 'měsíců'}`;
+                } else if (jednotka === 'years') {
+                    roky = hodnota;
+                    delkaText = `${hodnota} ${hodnota === 1 ? 'rok' : hodnota < 5 ? 'roky' : 'let'}`;
+                }
+            }
+            
+            // Výpočet data
+            const datum = new Date(datumZahajeni);
+            let vysledekDatum = new Date(datum);
+            
+            vysledekDatum.setFullYear(vysledekDatum.getFullYear() + roky);
+            vysledekDatum.setMonth(vysledekDatum.getMonth() + mesice);
+            vysledekDatum.setDate(vysledekDatum.getDate() + dny);
+            
+            // Posunutí na pracovní den, pokud je to nutné
+            const puvodniDatum = new Date(vysledekDatum);
+            vysledekDatum = posunNaPracovniDen(vysledekDatum);
+            
+            // Výpočet zbývajících dní
+            const dnes = new Date();
+            dnes.setHours(0, 0, 0, 0); // Normalizace na půlnoc
+            const zbyvajiciMs = vysledekDatum - dnes;
+            const zbyvajiciDny = Math.ceil(zbyvajiciMs / (1000 * 60 * 60 * 24));
+            
+            // Formátování data
+            const mesic = String(vysledekDatum.getMonth() + 1).padStart(2, '0');
+            const den = String(vysledekDatum.getDate()).padStart(2, '0');
+            const rok = vysledekDatum.getFullYear();
+            
+            // Zobrazení výsledků
+            document.getElementById('vysledekDatum').textContent = `${den}.${mesic}.${rok}`;
+            document.getElementById('zbyvajiciDny').textContent = `${Math.max(0, zbyvajiciDny)} dní`;
+            document.getElementById('delkaPromlceni').textContent = delkaText;
+            
+            // Upozornění, pokud bylo datum posunuto
+            const upozorneniDiv = document.getElementById('upozorneniPosun');
+            if (puvodniDatum.getTime() !== vysledekDatum.getTime()) {
+                const puvodniDen = String(puvodniDatum.getDate()).padStart(2, '0');
+                const puvodniMesic = String(puvodniDatum.getMonth() + 1).padStart(2, '0');
+                const puvodniRok = puvodniDatum.getFullYear();
+                upozorneniDiv.innerHTML = `<div class="alert alert-warning mt-3" role="alert">
+                    <strong>⚠️ Upozornění:</strong> Původní datum ${puvodniDen}.${puvodniMesic}.${puvodniRok} připadlo na víkend nebo státní svátek, 
+                    proto byla lhůta prodloužena na nejbližší pracovní den.
+                </div>`;
+            } else {
+                upozorneniDiv.innerHTML = '';
+            }
+            
+            document.getElementById('vysledek').classList.add('show');
+        }
+        
+        function exportDoKalendare() {
+            const datumText = document.getElementById('vysledekDatum').textContent;
+            
+            // Rozložení data z formátu DD.MM.RRRR
+            const casti = datumText.split('.');
+            const den = casti[0];
+            const mesic = casti[1];
+            const rok = casti[2];
+            
+            // Vytvoření data v požadovaném formátu pro ICS (YYYYMMDD)
+            const icsDate = `${rok}${mesic}${den}`;
+            
+            // Aktuální datum a čas pro vytvoření události
+            const now = new Date();
+            const created = now.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            
+            // Generování unikátního ID
+            const uid = 'promlceni-' + Date.now() + '@kalkulacka.cz';
+            
+            // Vytvoření ICS souboru ve správném formátu
+            const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Kalkulačka Promlčení//CS
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${created}
+DTSTART;VALUE=DATE:${icsDate}
+DTEND;VALUE=DATE:${icsDate}
+SUMMARY:Vypršení promlčecí lhůty
+DESCRIPTION:Poslední den promlčecí lhůty. Po tomto datu již nebude možné právo uplatnit.
+STATUS:CONFIRMED
+SEQUENCE:0
+BEGIN:VALARM
+TRIGGER:-P7D
+ACTION:DISPLAY
+DESCRIPTION:Připomínka: Za týden vyprší promlčecí lhůta
+END:VALARM
+END:VEVENT
+END:VCALENDAR`;
+            
+            // Vytvoření a stažení souboru
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'promlceni_lhuta.ics';
+            a.click();
+            
+            // Uvolnění paměti
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+        }
+        
+        // Nastavit dnešní datum jako výchozí
+        document.getElementById('datumZahajeni').valueAsDate = new Date();
+    </script>
+</body>
+</html>
